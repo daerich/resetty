@@ -1,0 +1,32 @@
+.TH RESETTY 1 2021-09-12 GNU/LINUX "General Commands Manual"
+.SH NAME
+resetty \- heuristic terminal reset clone
+.SH SYNOPSIS
+.B resetty
+[TTY]
+.SH DESCRIPTION
+.B resetty
+resets ttys in a dynamic fashion if no tty is specified. It employs some
+heuristics to find the attached terminal. (It parses the 
+.B \(dqproc\(dq 
+directory for example). Otherwise it just resets the specified tty, if
+permissible by the operating system.
+.SH EXIT STATUS
+Returns 0 on successfully attempted resets, 1 on failed setup routines.
+.SH FILES
+.IP 
+.I /proc/
+.SH NOTES
+Currently resetting a "remote" tty causes the terminal to just display a blank
+screen with just a (blinking) cursor.
+.B This is completely normal.
+Just press 
+.I \(dq<ENTER>\(dq / \(dq<CTRL>+<J>\(dq
+or any other shell reset key to restore your prompt. There seems nothing to be
+done about it. Otherwise your terminal is properly reset.
+.SH AUTHORS
+.UR https://github/daerich/resetty
+Written by DaErich and tracked on GitHub/CodeBerg.
+.UE
+.SH SEE ALSO
+reset(1), tset(1)
