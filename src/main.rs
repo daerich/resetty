@@ -3,7 +3,7 @@ use std::env;
 use std::process::exit;
 use std::fs;
 use std::os::unix::io::AsRawFd;
-use std::io::Write;
+use std::io::{self,Write};
 
 macro_rules! die {
     ($($string:expr),+) => {
@@ -13,6 +13,17 @@ macro_rules! die {
         print!("\n");
         exit(1)
     };
+}
+
+fn confirm() -> bool{
+    let mut strn = String::new();
+    println!("Continue[y/N]?:");
+    io::stdin().read_line(& mut strn).expect("Could'nt read from stdin!");
+    if strn == "y\n" || strn == "Y\n" {
+        true
+    }else{
+        false
+    }
 }
 
 fn isatty(fd: i32) -> bool{
@@ -28,7 +39,17 @@ fn isatty(fd: i32) -> bool{
 }
 fn heuristic_tty() -> String{
     let ppid;
-    let mut procstr = String::from("/proc/");
+    let mut procstr;
+    /* Test for /dev/tty, which is supposed to be valid, see tty(4)*/
+    if let Ok(_) = fs::File::open("/dev/tty"){
+        #[cfg(isdebug)]
+        println!("Using /dev/tty");
+        return String::from("/dev/tty")
+    }
+    /* Try standard Linux stdout,see proc(5); might be redirected */
+    #[cfg(isdebug)]
+    println!("Using stdout file descriptor!");
+    procstr = String::from("/proc/");
     unsafe{                
         ppid = libc::getppid();
     }
@@ -64,7 +85,7 @@ fn get_handle(file: &str) -> fs::File{
 fn resetty(tty: &str){
         let mut fd = get_handle(tty);
         if let Err(size) = fd.write(b"\x1Bc")/*.and_then(|_|{fd.write(b"\x0A")})*/{
-            die!("Couldn't open tty:",size);
+            die!("Couldn't open tty:", size);
         }
 
 }
@@ -86,19 +107,15 @@ fn main() -> Result<(),()> {
         }
     }
     if heur {
-    let tty = if let Ok(hndl) = fs::File::open("/proc/self/fd/0"){
-        if isatty(hndl.as_raw_fd()){
-                String::from("/proc/self/fd/0")
-        }else{
-            heuristic_tty()
+        let tty = heuristic_tty();
+        #[cfg(isdebug)]
+        if !confirm(){
+            die!("Aborting.");
         }
-        }else{ 
-            heuristic_tty()
-       };
-       resetty(&tty);
+        resetty(&tty);
 
     }else{
-        let tty = args.nth(1).unwrap();
+        let tty = args.nth(1).expect("Could'nt parse environment!");
         if let Ok(hndl) = fs::File::open(&tty){
             if isatty(hndl.as_raw_fd()){
                 resetty(&tty);
