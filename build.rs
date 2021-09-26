@@ -2,9 +2,11 @@ use std::env;
 use std::process::exit;
 
 fn main(){
-    let isdebug;
-    if let Ok(_) = env::var("DEBUG"){
+    let mut isdebug = false;
+    if let Ok(key) = env::var("DEBUG"){
+        if key.contains("true"){
         isdebug = true;
+        }
     }else{
         println!("Could'nt parse environment variables!\
         Exiting!");

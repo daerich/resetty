@@ -19,7 +19,7 @@ fn confirm() -> bool{
     let mut strn = String::new();
     println!("Continue[y/N]?:");
     io::stdin().read_line(& mut strn).expect("Could'nt read from stdin!");
-    if strn == "y\n" || strn == "Y\n" {
+    if strn.contains("y") || strn.contains("Y") {
         true
     }else{
         false
