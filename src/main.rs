@@ -115,7 +115,7 @@ fn main() -> Result<(),()> {
         resetty(&tty);
 
     }else{
-        let tty = args.nth(1).expect("Could'nt parse environment!");
+        let tty = args.nth(1).expect("Could'nt parse arguments!");
         if let Ok(hndl) = fs::File::open(&tty){
             if isatty(hndl.as_raw_fd()){
                 resetty(&tty);
